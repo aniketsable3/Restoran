@@ -1,103 +1,136 @@
 <?php
-$showAlert=false;
-if ($_SERVER["REQUEST_METHOD"]=="POST") {
-    include "dbconnect.php";
-    $name=$_POST['name'];
-    $email=$_POST['email'];
-    $dt=$_POST['dt'];
-    $people=$_POST['people'];
-    $mobileno=$_POST['mobileno'];
-    $request=$_POST['request'];
-    $exists=false;
 
-    $sql="INSERT INTO `book` (`name`, `email`, `dt`, `mobileno`, `request`, `people`) VALUES ( '$name', '$email', '$dt', '$mobileno', '$request', '$people');";
-    $result= mysqli_query($conn,$sql);
-        
-      //   if(!$result || mysqli_num_rows($result) == 0){
-      //     $numExistrows = mysqli_num_rows($result);
-      // }
-        // print_r(mysqli_num_rows($result)); exit;
-        // $numExistrows=mysqli_num_rows($result);
-        
-        if ($result){
+$showAlert = false;
+$login = false;
+$showError = false;
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit"])) {
+    include "dbconnect.php";
+
+    $name = $_POST['name'];
+    $email = $_POST['email'];
+    $dt = isset($_POST['dt']) ? $_POST['dt'] : '';
+    $formattedDate = date('Y-m-d H:i:s', strtotime($dt));
+    $people = $_POST['people'];
+    $mobileno = $_POST['mobileno'];
+    $request = $_POST['request'];
+    $btable = $_POST['btable'];
+    $exists = false;
+
+    // Check if an entry with the same number of people already exists
+    $checkSql = "SELECT * FROM `book` WHERE btable = '$btable' OR dt='$formattedDate'";
+    $checkResult = mysqli_query($conn, $checkSql);
+    $numExistRows = mysqli_num_rows($checkResult);
+
+    if ($numExistRows > 0) {
+        $exists = true;
+        $showError ="Entry with. $people. people already exists on $formattedDate";
+    } else {
+        // Insert a new record if no entry with the same number of people exists
+        $sql = "INSERT INTO `book` (`name`, `email`, `dt`, `mobileno`, `request`, `people`,`btable`) VALUES ('$name', '$email', '$formattedDate', '$mobileno', '$request', '$people','$btable')";
+        $result = mysqli_query($conn, $sql);
+
+        if ($result) {
             $showAlert = true;
+        } else {
+            $showError = "Error: " . mysqli_error($conn);
         }
     }
-    use PHPMailer\PHPMailer\PHPMailer;
-    use PHPMailer\PHPMailer\Exception;
-    require 'D:\xampp\htdocs\woo\PHPMailer-master\src/Exception.php';
-    require 'D:\xampp\htdocs\woo\PHPMailer-master\src/SMTP.php';
-    require 'D:\xampp\htdocs\woo\PHPMailer-master\src/PHPMailer.php';
-    require __DIR__ . '/vendor/autoload.php';
+}
 
-    if (isset($_POST["submit"])) {
-        $name=$_POST['name'];
-        $email=$_POST['email'];
-        $dt=$_POST['dt'];
-        $people=$_POST['people'];
-        $mobileno=$_POST['mobileno'];
-        $request=$_POST['request'];
-        // Assuming these variables are defined elsewhere
-        $subject = "Welcome To Restoran";
-        $body = "Congratulations ". $name. " Your table for ".$people." people has been booked on the date /".$dt." We hope you have an exciting day .
-        Thank you";
-    
-        $mail= new PHPMailer(true);
-        $mail->isSMTP();
-        $mail->Host='smtp.gmail.com';
-        $mail->SMTPAuth=true;
-        $mail->Username='aniketsable0508@gmail.com';
-        $mail->Password='wqzsthfaaiqeqsph';  
-        $mail->SMTPSecure='ssl';
-        $mail->Port=465;
-    
-        $mail->setFrom('aniketsable0508@gmail.com');
-        $mail->addAddress($_POST["email"]);
-    
-        $mail->isHTML(true);
-    
-        // Use the defined variables for subject and body
-        $mail->Subject = $subject;
-        $mail->Body = $body;
-    
-        $mail->send();
-    
-        echo "
-        <script> alert('email Sent Successfully');
-        
-        </script>
-        ";
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["login"])) {
+    include "dbconnect.php";
+    $btable = $_POST['btable'];
 
-        
-// $sid = "AC735140c2dc8522f59556656a5ea9db96";
-// $token = "313f7e3d1b9daace03af224c28ff057e";
-// $client = new Twilio\Rest\Client($sid, $token);
+    $sql = "SELECT * FROM `book` WHERE btable='$btable' AND dt='$formattedDate'";
+    $result = mysqli_query($conn, $sql);
+    $num = mysqli_num_rows($result);
 
-// $message=$client->messages->create(
-//     // The number you'd like to send the message to
-//     '+919423553920',
-//     [
-//         // A Twilio phone number you purchased at https://console.twilio.com
-//         'from' => '+12028310581',
-//         // The body of the text message you'd like to send
-//         'body' => "Congratulations ". $name. " Your table for ".$people." people has been booked on the date ".$dt." We hope you have an exciting day .
-//         Thank you"
-//     ]
-// );
-
-// if ($message) {
-//     echo "message sent";
-// }
-// else {
-//     echo "message not sent";
-// }
-
-// if ($message->sid) {
-//     echo "Message sent successfully";
-// } else {
-//     echo "Error: " . $message->error_message;
-// }
+    if ($num == 1) {
+        $login = true;
+        session_start();
+        $_SESSION['loggedin'] = true;
+        $_SESSION['btable'] = $btable;
+        $_SESSION['dt'] = $formattedDate;
+    } else {
+        $showError = "Invalid Credentials";
     }
+}
+
+// Rest of your code...
+
+
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+require 'D:\xampp\htdocs\woo\PHPMailer-master\src/Exception.php';
+require 'D:\xampp\htdocs\woo\PHPMailer-master\src/SMTP.php';
+require 'D:\xampp\htdocs\woo\PHPMailer-master\src/PHPMailer.php';
+require __DIR__ . '/vendor/autoload.php';
+    if ($showAlert) {
+    
+    
+        if (isset($_POST["submit"])) {
+            $name=$_POST['name'];
+            $email=$_POST['email'];
+            $dt=$_POST['dt'];
+            $people=$_POST['people'];
+            $mobileno=$_POST['mobileno'];
+            $request=$_POST['request'];
+            $btable=$_POST['btable'];
+            // Assuming these variables are defined elsewhere
+            $subject = "Welcome To Restoran";
+            $body = "Congratulations ". $name. " Your table for ".$people." people has been booked on the date /".$dt."On table Number ".$btable." We hope you have an exciting day .
+            Thank you";
+        
+            $mail= new PHPMailer(true);
+            $mail->isSMTP();
+            $mail->Host='smtp.gmail.com';
+            $mail->SMTPAuth=true;
+            $mail->Username='aniketsable0508@gmail.com';
+            $mail->Password='wqzsthfaaiqeqsph';  
+            $mail->SMTPSecure='ssl';
+            $mail->Port=465;
+        
+            $mail->setFrom('aniketsable0508@gmail.com');
+            $mail->addAddress($_POST["email"]);
+        
+            $mail->isHTML(true);
+        
+            // Use the defined variables for subject and body
+            $mail->Subject = $subject;
+            $mail->Body = $body;
+        
+            $mail->send();
+        
+            echo "
+            <script> alert('email Sent Successfully');
+            
+            </script>
+            ";
+    }
+
+        
+    $sid = "AC735140c2dc8522f59556656a5ea9db96";
+    $token = "27520626abea33645bb1221e9d84797a";
+    $client = new Twilio\Rest\Client($sid, $token);
+
+    $message = $client->messages->create(
+        '+919423553920',
+        [
+            'from' => '+12028310581',
+            'body' => "Congratulations ". $name. " Your table for ".$people." people has been booked on the date /".$dt."On table Number ".$btable." We hope you have an exciting day .
+            Thank you
+            "
+        ]
+    );
+
+
+
+ }
+
+
+
 ?>
 <!doctype html>
 <html lang="en">
@@ -147,6 +180,12 @@ if ($_SERVER["REQUEST_METHOD"]=="POST") {
         font-size: 3rem;
     }
     </style>
+    <?php 
+    if ($exists) {
+        echo '<script>alert("Entry with ' . $btable . ' people already exists on '.$formattedDate.'");</script>';
+    }
+    ?>
+    
 </head>
 
 <body>
@@ -179,6 +218,11 @@ if ($_SERVER["REQUEST_METHOD"]=="POST") {
         </div>
     </nav>
     </div>
+    <?php
+    if ($login) {
+    echo "<script>alert('The table is been booked') </script>";
+  }
+  ?>
 
     <!-- Reservation Start -->
     <div class="container-xxl py-5 px-0 wow fadeInUp mt-5   " data-wow-delay="0.1s">
@@ -224,6 +268,24 @@ if ($_SERVER["REQUEST_METHOD"]=="POST") {
                                         <option value="1">People 1</option>
                                         <option value="2">People 2</option>
                                         <option value="3">People 3</option>
+                                    </select>
+                                    <label for="select1">No Of People</label>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-floating">
+                                    <select class="form-select" id="select1" name="btable">
+                                        <option value="1">Table 1</option>
+                                        <option value="2">Table 2</option>
+                                        <option value="3">Table 3</option>
+                                        <option value="4">Table 4</option>
+                                        <option value="5">Table 5</option>
+                                        <option value="6">Table 6</option>
+                                        <option value="7">Table 7</option>
+                                        <option value="8">Table 8</option>
+                                        <option value="9">Table 9</option>
+                                        <option value="10">Table 10</option>
+                                        
                                     </select>
                                     <label for="select1">No Of People</label>
                                 </div>
@@ -320,6 +382,7 @@ if ($_SERVER["REQUEST_METHOD"]=="POST") {
         </div>
     </div>
     <!-- Footer End -->
+    
 
 
     <!-- Back to Top -->

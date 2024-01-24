@@ -1,49 +1,42 @@
 <?php
-$showAlert=false;
-if ($_SERVER["REQUEST_METHOD"]=="POST") {
-    include "dbconnect.php";
-    $username=$_POST['username'];
-    $email=$_POST['email'];
-    $password=$_POST['password'];
-    $exists=false;
+session_start();
 
-    $sql="INSERT INTO `signup` (`username`, `email`, `password`) VALUES ('$username', '$email', '$password');";
-    $result= mysqli_query($conn,$sql);
-        
-      //   if(!$result || mysqli_num_rows($result) == 0){
-      //     $numExistrows = mysqli_num_rows($result);
-      // }
-        // print_r(mysqli_num_rows($result)); exit;
-        // $numExistrows=mysqli_num_rows($result);
-        
-        if ($result){
-            $showAlert = true;
-        }
+if (!isset($_SESSION['email']) || !isset($_SESSION['signup_otp'])) {
+    header("Location: register.php");
+    exit();
+}
+
+if (isset($_POST['verify_otp'])) {
+    $entered_otp = $_POST['entered_otp'];
+    $stored_otp = $_SESSION['signup_otp'];
+
+    if ($entered_otp == $stored_otp) {
+        echo "OTP verified successfully. You can now log in.";
+        // Redirect to login page or perform further actions
+        header("Location: main.php");
+        session_unset();
+    } else {
+        echo "Invalid OTP. Please try again.";
     }
-
-    
-    
+}
 ?>
 <!doctype html>
 <html lang="en">
-
-<head>
+  <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
-        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    
+    <!-- Favicon -->
+    <link href="img/favicon.ico" rel="icon">
 
-        <link href="img/favicon.ico" rel="icon">
-
-
+    <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&family=Pacifico&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&family=Pacifico&display=swap" rel="stylesheet">
 
     <!-- Icon Font Stylesheet -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
@@ -61,8 +54,9 @@ if ($_SERVER["REQUEST_METHOD"]=="POST") {
     <link href="css/style.css" rel="stylesheet">
 
     <title>Hello, world!</title>
-    <style>
-    body {
+  </head>
+  <style>
+     body {
         background-color: black;
 
 
@@ -71,12 +65,10 @@ if ($_SERVER["REQUEST_METHOD"]=="POST") {
     #h1 {
         font-size: 3rem;
     }
-    </style>
-</head>
 
-<body>
-    
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4 px-lg-5 py-3 py-lg-0">
+    </style>
+  <body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4 px-lg-5 py-3 py-lg-0">
             <a href="" class="navbar-brand p-0">
                 <h1 class="text-primary m-0"><i class="fa fa-utensils me-3"></i>Restoran</h1>
                 <!-- <img src="img/logo.png" alt="Logo"> -->
@@ -103,53 +95,18 @@ if ($_SERVER["REQUEST_METHOD"]=="POST") {
                 <a href="" class="btn btn-primary py-2 px-4">Book A Table</a>
             </div>
         </nav>
-        <?php 
-                     
-                       if ($showAlert) {
-                       header('location: main.php');  
-                     } 
-                     
- 
 
 
-?>
 
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6 mt-5 ">
-                <div class="card mt-5">
-                    <div class="card-header text-center">
-                        Registration Form
-                    </div>
-                    <div class="card-body">
-                        <form  method="post" action="register.php">
-                            <div class="form-group">
-                                <label for="username">Username</label>
-                                <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username">
-                            </div>
-                            <div class="form-group">
-                                <label for="email">Email address</label>
-                                <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email">
-                            </div>
-                            <div class="form-group">
-                                <label for="password">Password</label>
-                                <input type="password" class="form-control" id="password" name="password"
-                                    placeholder="Enter your password">
-                            </div>
-                            <button type="submit" name="submit" class="btn btn-primary">Sign Up</button>
-                        </form>
-                    </div>
-                </div>
- 
+  
+<!-- HTML form for OTP verification -->
+<form method="post" action="otp_verification.php" class="text-center my-5 py-5" >
+    <label for="entered_otp" class="my-5 py-5">Enter OTP:</label>
+    <input type="text" name="entered_otp" required >
+    <button type="submit" name="verify_otp" class="btn btn-primary">Verify OTP</button>
+</form>
 
-
-            </div>
-            <div class="col-md-6">
-                <img src="foad-roshan-Y6OgisiGBjM-unsplash-removebg-preview.png" alt="" width="400px" class="mx-5">
-            </div>
-        </div>
-    </div>
-    <div class="container-fluid bg-dark text-light footer pt-5 mt-3 wow fadeIn" data-wow-delay="0.1s">
+<div class="container-fluid bg-dark text-light footer pt-5 mt-3 wow fadeIn" data-wow-delay="0.1s">
             <div class="container py-5">
                 <div class="row g-5">
                     <div class="col-lg-3 col-md-6">
@@ -240,6 +197,6 @@ if ($_SERVER["REQUEST_METHOD"]=="POST") {
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
-</body>
-
+  </body>
 </html>
+
