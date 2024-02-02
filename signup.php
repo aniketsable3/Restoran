@@ -60,7 +60,7 @@ if ($_SERVER["REQUEST_METHOD"]=="POST") {
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
 
-    <title>Hello, world!</title>
+    <title>SignUp to our Website</title>
     <style>
     body {
         background-color: black;

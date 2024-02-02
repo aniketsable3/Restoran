@@ -53,7 +53,7 @@ if (isset($_POST['verify_otp'])) {
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
 
-    <title>Hello, world!</title>
+    <title>OTP Verification</title>
   </head>
   <style>
      body {

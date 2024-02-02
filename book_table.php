@@ -3,6 +3,7 @@
 $showAlert = false;
 $login = false;
 $showError = false;
+$exists = false;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit"])) {
     include "dbconnect.php";
@@ -15,7 +16,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit"])) {
     $mobileno = $_POST['mobileno'];
     $request = $_POST['request'];
     $btable = $_POST['btable'];
-    $exists = false;
 
     // Check if an entry with the same number of people already exists
     $checkSql = "SELECT * FROM `book` WHERE btable = '$btable' OR dt='$formattedDate'";
@@ -32,6 +32,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit"])) {
 
         if ($result) {
             $showAlert = true;
+            
+            // Redirect after successful form submission
+           
         } else {
             $showError = "Error: " . mysqli_error($conn);
         }
@@ -104,26 +107,26 @@ require __DIR__ . '/vendor/autoload.php';
             $mail->send();
         
             echo "
-            <script> alert('email Sent Successfully');
+            <script> alert('Your Table Is Been Booked Successfully.Kindly check Your Mailbok');
             
             </script>
             ";
     }
 
         
-    $sid = "AC735140c2dc8522f59556656a5ea9db96";
-    $token = "27520626abea33645bb1221e9d84797a";
-    $client = new Twilio\Rest\Client($sid, $token);
+    //   $sid = "AC735140c2dc8522f59556656a5ea9db96";
+    //   $token = "27520626abea33645bb1221e9d84797a";
+    //   $client = new Twilio\Rest\Client($sid, $token);
 
-    $message = $client->messages->create(
-        '+919423553920',
-        [
-            'from' => '+12028310581',
-            'body' => "Congratulations ". $name. " Your table for ".$people." people has been booked on the date /".$dt."On table Number ".$btable." We hope you have an exciting day .
-            Thank you
-            "
-        ]
-    );
+    //   $message = $client->messages->create(
+    //       '+919423553920',
+    //       [
+    //           'from' => '+12028310581',
+    //           'body' => "Congratulations ". $name. " Your table for ".$people." people has been booked on the date /".$dt."On table Number ".$btable." We hope you have an exciting day .
+    //           Thank you
+    //           "
+    //       ]
+    //   );
 
 
 
@@ -168,7 +171,7 @@ require __DIR__ . '/vendor/autoload.php';
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
 
-    <title>Hello, world!</title>
+    <title>Booking Table</title>
     <style>
     body {
         background-color: black;
@@ -180,11 +183,7 @@ require __DIR__ . '/vendor/autoload.php';
         font-size: 3rem;
     }
     </style>
-    <?php 
-    if ($exists) {
-        echo '<script>alert("Entry with ' . $btable . ' people already exists on '.$formattedDate.'");</script>';
-    }
-    ?>
+  
     
 </head>
 
@@ -223,6 +222,16 @@ require __DIR__ . '/vendor/autoload.php';
     echo "<script>alert('The table is been booked') </script>";
   }
   ?>
+  
+    <?php 
+    
+    if ($exists) {
+    
+        echo '<script> alert("Entry with ' . $btable . ' people already exists on '.$formattedDate.'");</script>';
+        // Change 'success.php' to your desired success page
+        exit();
+    }
+    ?>
 
     <!-- Reservation Start -->
     <div class="container-xxl py-5 px-0 wow fadeInUp mt-5   " data-wow-delay="0.1s">
@@ -239,19 +248,19 @@ require __DIR__ . '/vendor/autoload.php';
                 <div class="p-5 wow fadeInUp" data-wow-delay="0.2s">
                     <h5 class="section-title ff-secondary text-start text-primary fw-normal">Reservation</h5>
                     <h1 class="text-white mb-4">Book A Table Online</h1>
-                    <form action="" method="post">
+                    <form action="" method="post" id="reservationForm">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="form-floating">
                                     <input type="text" class="form-control" name="name" id="name"
-                                        placeholder="Your Name">
+                                        placeholder="Your Name" required>
                                     <label for="name">Your Name</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating">
                                     <input type="email" class="form-control" id="email" name="email"
-                                        placeholder="Your Email">
+                                        placeholder="Your Email" required>
                                     <label for="email">Your Email</label>
                                 </div>
                             </div>
@@ -264,7 +273,7 @@ require __DIR__ . '/vendor/autoload.php';
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <select class="form-select" id="select1" name="people">
+                                    <select class="form-select" id="select1" name="people" required>
                                         <option value="1">People 1</option>
                                         <option value="2">People 2</option>
                                         <option value="3">People 3</option>
@@ -293,7 +302,7 @@ require __DIR__ . '/vendor/autoload.php';
                             <div class="col-md-12">
                                 <div class="form-floating">
                                     <input type="text" class="form-control" name="mobileno" id="number"
-                                        placeholder="Your Mobile No">
+                                        placeholder="Your Mobile No" required>
                                     <label for="number">Your Number</label>
                                 </div>
                             </div>
@@ -305,7 +314,7 @@ require __DIR__ . '/vendor/autoload.php';
                                 </div>
                             </div>
                             <div class="col-12">
-                                <button class="btn btn-primary w-100 py-3" type="submit" name="submit">Book Now</button>
+                                <button class="btn btn-primary w-100 py-3" type="submit" name="submit" id="submitBtn">Book Now</button>
                             </div>
                         </div>
                     </form>
@@ -351,7 +360,7 @@ require __DIR__ . '/vendor/autoload.php';
                     <p>Dolor amet sit justo amet elitr clita ipsum elitr est.</p>
                     <div class="position-relative mx-auto" style="max-width: 400px;">
                         <input class="form-control border-primary w-100 py-3 ps-4 pe-5" type="text"
-                            placeholder="Your email">
+                            placeholder="Your email" required>
                         <button type="button"
                             class="btn btn-primary py-2 position-absolute top-0 end-0 mt-2 me-2">SignUp</button>
                     </div>
@@ -390,7 +399,7 @@ require __DIR__ . '/vendor/autoload.php';
     </div>
 
     <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/js/all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="lib/wow/wow.min.js"></script>
     <script src="lib/easing/easing.min.js"></script>
@@ -400,6 +409,27 @@ require __DIR__ . '/vendor/autoload.php';
     <script src="lib/tempusdominus/js/moment.min.js"></script>
     <script src="lib/tempusdominus/js/moment-timezone.min.js"></script>
     <script src="lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $("#submitBtn").on("click", function () {
+                var formData = $("#reservationForm").serialize();
+
+                $.ajax({
+                    type: "POST",
+                    url: "book_tabl.php", // Update with the path to your PHP script
+                    data: formData,
+                    success: function (response) {
+                        alert(response);
+                        // You can handle the response here, like showing a success message or updating the UI.
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+            });
+        });
+    </script>
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>

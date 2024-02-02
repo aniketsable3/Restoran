@@ -36,7 +36,7 @@
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
 
-    <title>Hello, world!</title>
+    <title>Welcome to Restoran</title>
     <style>
     body {
         background-color: black;
